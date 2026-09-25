@@ -1,0 +1,6 @@
+<Solution>
+  <Folder Name="/backend/">
+    <Project Path="backend/CreditWorks.Api/CreditWorks.Api.csproj" />
+    <Project Path="backend/CreditWorks.Tests/CreditWorks.Tests.csproj" />
+  </Folder>
+</Solution>
