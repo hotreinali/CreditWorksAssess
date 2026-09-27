@@ -51,6 +51,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
         modelBuilder.Entity<CategoryConfiguration>(entity =>
         {
             entity.HasKey(x => x.Id);
+            entity.Property(x => x.Version).IsConcurrencyToken();
             entity.HasData(new CategoryConfiguration { Id = 1, Version = 1 });
         });
     }

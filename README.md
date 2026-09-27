@@ -23,6 +23,9 @@ With the API running at `http://localhost:5000`, the available vehicle endpoints
 | `GET` | `/api/manufacturers` | List the predefined manufacturers |
 | `POST` | `/api/vehicles` | Validate and create a vehicle |
 | `GET` | `/api/vehicles?sortBy=ownerName&direction=asc` | List vehicles with their current categories |
+| `GET` | `/api/categories` | Read the complete category configuration and version |
+| `PUT` | `/api/categories` | Atomically replace the complete category configuration |
+| `GET` | `/api/category-icons` | List the icon keys accepted for categories |
 
 `sortBy` accepts `ownerName`, `manufacturer`, `yearOfManufacture`, or `weight`. `direction` accepts `asc` or `desc`; both parameters default to owner name ascending.
 
@@ -38,6 +41,8 @@ Example vehicle request:
 ```
 
 Vehicle years must be from 1886 through the next calendar year. Invalid input returns an RFC 7807 validation response without writing a vehicle.
+
+Category changes are submitted as one complete configuration. The request must include the version returned by `GET /api/categories`; a stale version receives HTTP `409 Conflict` and must reload before retrying. Omitting a category deletes it, adding an item creates it, and changing an item modifies its definition. The API validates the entire proposed configuration before applying it in a transaction.
 
 ## Category boundaries
 
