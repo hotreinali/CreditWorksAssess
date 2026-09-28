@@ -8,7 +8,8 @@ public sealed class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbConte
     public AppDbContext CreateDbContext(string[] args)
     {
         var connection = Environment.GetEnvironmentVariable("ConnectionStrings__CreditWorks")
-            ?? "Server=localhost;Database=CreditWorks;Integrated Security=true;TrustServerCertificate=true";
+            ?? throw new InvalidOperationException(
+                "Set ConnectionStrings__CreditWorks before running Entity Framework commands.");
         var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseSqlServer(connection, sql => sql.UseCompatibilityLevel(150)).Options;
         return new AppDbContext(options);
