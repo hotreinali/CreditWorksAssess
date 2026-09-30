@@ -29,15 +29,46 @@ dotnet tool install --global dotnet-ef --version 10.0.12
 
 The application only depends on a SQL Server connection string. Docker is optional.
 
-### Option A: existing SQL Server
+### Option A: Windows without Docker
 
-Create or use a SQL Server login that can create the development database, then set the connection string in the terminal that will run EF Core and the API:
+Install [SQL Server 2022 Express](https://www.microsoft.com/en-us/download/details.aspx?id=104781) if SQL Server is not already installed. LocalDB is the simplest choice for running the application on one Windows computer: it uses the current Windows account and does not require a SQL Server username or password.
 
-```bash
-export ConnectionStrings__CreditWorks='Server=localhost,1433;Database=CreditWorks;User Id=sa;Password=<your password>;TrustServerCertificate=true'
+Open PowerShell and check whether LocalDB is installed:
+
+```powershell
+sqllocaldb info
 ```
 
-Replace the server and credentials with those for your SQL Server instance. On Windows, an integrated-security connection string can be used instead.
+If `MSSQLLocalDB` is listed, start it and set the application connection string:
+
+```powershell
+sqllocaldb start MSSQLLocalDB
+$env:ConnectionStrings__CreditWorks = 'Server=(localdb)\MSSQLLocalDB;Database=CreditWorks;Trusted_Connection=True;TrustServerCertificate=True'
+```
+
+From the repository root, create and seed the database:
+
+```powershell
+dotnet tool install --global dotnet-ef --version 10.0.12
+
+dotnet ef database update `
+  --project backend/CreditWorks.Api `
+  --startup-project backend/CreditWorks.Api
+```
+
+If `dotnet-ef` is already installed, the first command may report that the tool already exists; continue with `database update`. Start the API in the same PowerShell window so it can read the connection string:
+
+```powershell
+dotnet run --project backend/CreditWorks.Api
+```
+
+If the full SQL Server Express database engine was installed instead of LocalDB, its default named instance is normally `SQLEXPRESS`. Use this connection string and run the same migration and API commands:
+
+```powershell
+$env:ConnectionStrings__CreditWorks = 'Server=.\SQLEXPRESS;Database=CreditWorks;Trusted_Connection=True;TrustServerCertificate=True'
+```
+
+For a default SQL Server instance named `MSSQLSERVER`, use `Server=localhost` instead. `Trusted_Connection=True` means Windows Authentication, so no `User Id=sa` or password is required. The PowerShell environment variable lasts only for the current window.
 
 ### Option B: Docker SQL Server
 
@@ -56,9 +87,9 @@ export ConnectionStrings__CreditWorks="Server=localhost,1433;Database=CreditWork
 
 Wait until `docker compose logs sqlserver` reports that SQL Server is ready. The image runs as `linux/amd64`, allowing Apple Silicon Docker Desktop to use emulation. To stop it without deleting data, run `docker compose stop`.
 
-### Create the schema
+### Create the schema for an existing non-Windows-authenticated server
 
-From the repository root, with `ConnectionStrings__CreditWorks` set:
+Option A already creates the schema with its PowerShell commands. For another SQL Server instance or the Docker option, run the following from the repository root after setting `ConnectionStrings__CreditWorks`:
 
 ```bash
 dotnet ef database update \
